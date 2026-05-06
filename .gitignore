@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environnements virtuels
+venv/
+env/
+.env/
+
+# Fichiers de configuration / IDE
+.vscode/
+.idea/
+
+# Base de données (optionnel : commentez cette ligne si vous voulez envoyer la DB sur GitHub)
+*.db
+*.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db
