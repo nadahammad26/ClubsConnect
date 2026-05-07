@@ -5,9 +5,12 @@ from models import db, Membre, President, Club, Evenement
 app = Flask(__name__)
 app.secret_key = "super_secret_key_pour_les_sessions"
 
-# Configuration de la base de données SQLite
+# Configuration de la base de données (Postgres sur Railway, SQLite en local)
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'clubconnect.db')
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'clubconnect.db'))
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialisation de la base de données avec l'application Flask
@@ -19,48 +22,40 @@ db.init_app(app)
 def init_db():
     with app.app_context():
         db.create_all()
-        # On vérifie si la base est vide
         if not President.query.first():
             print("Initialisation de la base de données avec les données de démo...")
             
-            # Création de présidents
             pres1 = President(nom="Dupont", prenom="Jean", email="jean.dupont@email.com", password="pass123", filiere="Informatique", telephone="0601020304")
             pres2 = President(nom="Martin", prenom="Sophie", email="sophie.martin@email.com", password="pass456", filiere="Marketing", telephone="0605060708")
             
             db.session.add(pres1)
             db.session.add(pres2)
-            db.session.commit() # Commit pour avoir les IDs générés
+            db.session.commit()
 
-            # Création de clubs
             club_info = Club(nom="Club Informatique", description="Le club pour les passionnés de code.", categorie="Tech", date_creation="2023-09-01", president=pres1)
             club_bde = Club(nom="BDE", description="Bureau des étudiants.", categorie="Vie associative", date_creation="2020-09-01", president=pres2)
             
-            # Le président est automatiquement membre de son club
             club_info.membres.append(pres1)
             club_bde.membres.append(pres2)
             
             db.session.add(club_info)
             db.session.add(club_bde)
 
-            # Création d'événements
             event1 = Evenement(titre="Hackathon 2024", date="2024-05-15", description="Un hackathon de 48h.", adhesion="Gratuit", club=club_info)
             db.session.add(event1)
 
-            # Création de membres standards
             membre1 = Membre(nom="Bernard", prenom="Luc", email="luc.bernard@email.com", password="mdp1", filiere="Informatique", telephone="0701020304")
             membre2 = Membre(nom="Dubois", prenom="Marie", email="marie.dubois@email.com", password="mdp2", filiere="Design", telephone="0705060708")
             
             db.session.add(membre1)
             db.session.add(membre2)
             
-            # Ajout des membres au club info
             club_info.membres.append(membre1)
             club_info.membres.append(membre2)
             
             db.session.commit()
             print("Données de démo injectées avec succès !")
 
-# Appel manuel pour créer les tables au premier lancement
 init_db()
 
 # ============================================================
@@ -86,7 +81,6 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # Requête dans la base de données
         user = Membre.query.filter_by(email=email, password=password).first()
         if user:
             session['user_email'] = user.email
@@ -109,7 +103,6 @@ def register():
         filiere = request.form.get('filiere')
         telephone = request.form.get('telephone')
         
-        # Vérifier si l'email existe déjà
         if Membre.query.filter_by(email=email).first():
             flash("Cet email est déjà utilisé.", "danger")
             return redirect(url_for('register'))
@@ -148,7 +141,6 @@ def add_event(club_id):
         return redirect(url_for('login'))
         
     club = db.session.get(Club, club_id)
-    # Vérification que l'utilisateur est bien le président du club
     if club and club.president_id == session['user_id']:
         titre = request.form.get('titre')
         date = request.form.get('date')
@@ -187,7 +179,5 @@ def logout():
     return redirect(url_for('index'))
 
 if __name__ == "__main__":
-    # Railway donne un port dynamique, on doit le récupérer ici
     port = int(os.environ.get("PORT", 5000))
-    # On dit à Flask d'écouter sur l'hôte 0.0.0.0 pour être accessible en ligne
     app.run(host="0.0.0.0", port=port)
