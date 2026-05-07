@@ -186,5 +186,8 @@ def logout():
     flash("Vous êtes déconnecté.", "info")
     return redirect(url_for('index'))
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    # Railway donne un port dynamique, on doit le récupérer ici
+    port = int(os.environ.get("PORT", 5000))
+    # On dit à Flask d'écouter sur l'hôte 0.0.0.0 pour être accessible en ligne
+    app.run(host="0.0.0.0", port=port)
