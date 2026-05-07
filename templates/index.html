@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .clubs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .club-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .club-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 4px;
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .club-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .club-card:hover::before {
+        opacity: 1;
+    }
+
+    .club-category {
+        display: inline-block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 0.5rem;
+    }
+
+    .club-card h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.5rem;
+        color: #fff;
+        margin-bottom: 1rem;
+    }
+
+    .club-card p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+        flex: 1;
+    }
+
+    .btn-outline {
+        display: inline-block;
+        text-align: center;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-outline:hover {
+        background: #fff;
+        color: #000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animate-in">
+    <h2 class="page-title">Découvrez l'Élite Associative</h2>
+    <p class="page-subtitle">Parcourez les clubs de votre campus, rencontrez des passionnés et participez à des événements exclusifs.</p>
+</div>
+
+<div class="clubs-grid animate-in" style="animation-delay: 0.2s;">
+    {% for club in clubs %}
+        <div class="club-card">
+            <span class="club-category">{{ club.categorie }}</span>
+            <h3>{{ club.nom }}</h3>
+            <p>{{ club.description }}</p>
+            <a href="/club/{{ club.id }}" class="btn-outline">Découvrir le club &rarr;</a>
+        </div>
+    {% else %}
+        <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem; background: var(--card-bg); border-radius: 12px; border: 1px dashed var(--card-border);">Aucun club n'est disponible pour le moment.</p>
+    {% endfor %}
+</div>
+{% endblock %}
